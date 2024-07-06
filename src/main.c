@@ -1,13 +1,54 @@
 #include "main.h"
 
-typedef struct {
-    char * name_task;
-} task;
+// Переписать позже меню используя массив указателей на функций и enum, как в учебнике.
 
 
 
+void menu()
+{
+    while (1) {
+        fputs("Выберите один из вариантов", stdout);
+        fputs("1. Создать новую задачу\n2. Показать текущие.\n3. Удалить задачу по ID.\n4. Завершить задачу.");
+        int user_input;
+        fscnaf(stdin, "%d", &user_input);
+        switch (user_input) {
+
+            case 1:
+                char [100] user_input_new_task;
+                fputs("Введите новую задачу: ", stdout);
+                fscanf(stdin, "%s", user_input_new_task);
+                add_new_task(user_input_new_task);
+                break;
+
+            case 2:
+                print_tasks();
+                break;
+            
+            case 3:
+                break;
+
+            case 4:
+                break;
+        }
+    }
+}
 
 
+void print_tasks() {
+    FILE *data_tasks;
+    if ((data_tasks = fopen(DATA_TASKS, "r")) != NULL) {
+        char c;
+        while((c = fgetc(data_tasks)) != EOF) {
+            fputc(c);
+        }
+
+        fclose(data_tasks);
+    }
+}
+
+
+
+// Переписать под новый интерфейс. Удаление через id задачи. Запись файла через массив структур; Или можно даже попробовать связный список
 void delete_task (char * name_task) {
     FILE *data_tasks;
 
@@ -19,7 +60,7 @@ void delete_task (char * name_task) {
         buffer[i] = malloc(sizeof(char) * sizebuffer_line);
         }
     
-    if ((data_tasks = fopen("data_tasks.txt", "r")) != NULL) {
+    if ((data_tasks = fopen(DATA_TASKS, "r")) != NULL) {
         char *line = NULL;
         size_t len = 0;
         ssize_t read;
@@ -49,7 +90,7 @@ void delete_task (char * name_task) {
 
 
         // Перезаписываем в файл данные без удаленной строки
-        if ((data_tasks = fopen("data_tasks.txt", "w")) != NULL) {      
+        if ((data_tasks = fopen(DATA_TASKS, "w")) != NULL) {      
             for (int i = 0; i < counter; i++) {
                 if (strlen(buffer[i]) > 0) {
                     fprintf(data_tasks, "%s", buffer[i]);
@@ -73,7 +114,7 @@ void delete_task (char * name_task) {
 
 void add_new_task(char * name_task) {
     FILE *data_tasks;
-    if ((data_tasks = fopen("data_tasks.txt", "a")) != NULL) {
+    if ((data_tasks = fopen(DATA_TASKS, "a")) != NULL) {
         fprintf(data_tasks, "%s", name_task);
         fclose(data_tasks);
     }   
