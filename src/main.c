@@ -1,134 +1,145 @@
 #include "main.h"
 
 // Переписать позже меню используя массив указателей на функций и enum, как в учебнике.
+// Нужно узнать про типизированный файл data.
+// ИЛИ просто сделать сканф в динамический массив структур для delete_task
 
-
-
-void menu()
-{
-    while (1) {
-        fputs("Выберите один из вариантов", stdout);
-        fputs("1. Создать новую задачу\n2. Показать текущие.\n3. Удалить задачу по ID.\n4. Завершить задачу.");
+void menu() {
+    int flag = 1;
+    while (flag) {
+        fputs("Выберите один из вариантов\n", stdout);
+        fputs("1. Создать новую задачу\n2. Показать текущие.\n3. Удалить задачу по ID.\n4. Завершить задачу.\n5. Изменить задачу: ", stdout);
         int user_input;
-        fscnaf(stdin, "%d", &user_input);
+        fscanf(stdin, "%d", &user_input);
+        fflush(stdin);
         switch (user_input) {
-
-            case 1:
-                char [100] user_input_new_task;
+            case 1: {
+                char user_input_new_task[100];
                 fputs("Введите новую задачу: ", stdout);
-                fscanf(stdin, "%s", user_input_new_task);
+                fgets(user_input_new_task, 100, stdin); // Исправлено
+                fflush(stdin);
                 add_new_task(user_input_new_task);
                 break;
-
+            }
             case 2:
                 print_tasks();
                 break;
-            
-            case 3:
+            case 3: {
+                int user_input_id;
+                fputs("Введите ID задачи для удаления: ", stdout); // Добавлено
+                fscanf(stdin, "%d", &user_input_id);
+                fflush(stdin);
+                delete_task(user_input_id);
                 break;
-
+            }
             case 4:
+                flag = 0;
+                break;
+            default:
+                fputs("Неверный ввод, попробуйте снова.\n", stdout); // Добавлено
                 break;
         }
     }
 }
 
-
-void print_tasks() {
-    FILE *data_tasks;
-    if ((data_tasks = fopen(DATA_TASKS, "r")) != NULL) {
-        char c;
-        while((c = fgetc(data_tasks)) != EOF) {
-            fputc(c);
+void add_new_task(char* name_new_task) {
+    size_t task_count;
+    task *buffer_tasks = read_file(&task_count);
+    if (buffer_tasks != NULL) {
+        FILE *new_data;
+        if ((new_data = fopen(DATA_TASKS, "a")) != NULL) {
+            fprintf(new_data, "%d %s", (int)task_count + 1, name_new_task); // Исправлено
+            fclose(new_data);
+        } else {
+            fprintf(stderr, "Ошибка открытия файла %s для записи\n", DATA_TASKS); // Исправлено
         }
-
-        fclose(data_tasks);
+        free(buffer_tasks); // Добавлено
+    } else {
+        fprintf(stderr, "Ошибка чтения файла %s\n", DATA_TASKS); // Исправлено
     }
 }
 
-
-
-// Переписать под новый интерфейс. Удаление через id задачи. Запись файла через массив структур; Или можно даже попробовать связный список
-void delete_task (char * name_task) {
-    FILE *data_tasks;
-
-    int size_buffer_lines = 10;
-    int sizebuffer_line = 50;
-    char** buffer = malloc(sizeof(char *) * size_buffer_lines);     // Выделяем память под строки из файла
-    int counter = 0;    // Для заполнения буффера
-    for (int i = 0; i < size_buffer_lines; i++) {
-        buffer[i] = malloc(sizeof(char) * sizebuffer_line);
+void delete_task(int id) {
+    print_tasks();
+    size_t task_count;
+    task *buffer_tasks = read_file(&task_count);
+    if (buffer_tasks != NULL) {
+        for (size_t i = 0; i < task_count; i++) {
+            if (id == buffer_tasks[i].id) {
+                buffer_tasks[i].id = -1; // Используем -1 для обозначения удаленного ID
+                break;
+            }
         }
-    
-    if ((data_tasks = fopen(DATA_TASKS, "r")) != NULL) {
-        char *line = NULL;
-        size_t len = 0;
-        ssize_t read;
 
-       while((read = getline(&line, &len, data_tasks)) != -1) {     // Копируем все данные файла в буффер
-            if (read >= sizebuffer_line) 
-                buffer[counter] = realloc(buffer[counter], sizeof(char) * (read + 1));
-            strcpy(buffer[counter], line);
-            if (counter >= size_buffer_lines - 1)  {
-                size_buffer_lines += 10;
-                buffer = realloc(buffer, sizeof(char*) * size_buffer_lines);
-                for (int i = counter + 1; i < size_buffer_lines; i++) {
-                    buffer[i] = malloc(sizeof(char) * size_buffer_lines);
-                    }    
+        // Перезапись файла без удаленного ID
+        FILE* new_data;
+        if ((new_data = fopen(DATA_TASKS, "w")) != NULL) {
+            int counter = 1;
+            for (size_t i = 0; i < task_count; i++) {
+                if (buffer_tasks[i].id != -1) {
+                    fprintf(new_data, "%d %s\n", counter, buffer_tasks[i].name_task); // Исправлено
+                    counter++;
                 }
+            }
+            fclose(new_data);
+        } else {
+            fprintf(stderr, "Ошибка открытия файла %s для записи\n", DATA_TASKS); // Исправлено
+        }
+        free(buffer_tasks);
+    } else {
+        fprintf(stderr, "Ошибка чтения файла %s\n", DATA_TASKS); // Исправлено
+    }
+}
+
+void print_tasks() { // Исправлено имя функции
+    size_t task_count;
+    task *buffer_tasks = read_file(&task_count);
+    if (buffer_tasks != NULL) {
+        fputs("----------------------------------\n", stdout);
+        for (size_t i = 0; i < task_count; i++) {
+            fprintf(stdout, "%d. %s\n", buffer_tasks[i].id, buffer_tasks[i].name_task);
+        }
+        fputs("----------------------------------\n", stdout);
+        free(buffer_tasks);
+    } else {
+        fprintf(stderr, "Ошибка чтения файла %s\n", DATA_TASKS); // Исправлено
+    }
+}
+
+task* read_file(size_t* task_count) {
+    FILE* data_file;
+    if ((data_file = fopen(DATA_TASKS, "r")) != NULL) {
+        size_t len_buffer = 50;
+        task *buffer_tasks = malloc(sizeof(task) * len_buffer);
+        if (buffer_tasks == NULL) {
+            fprintf(stderr, "Ошибка выделения памяти\n");
+            fclose(data_file);
+            return NULL;
+        }
+        int counter = 0;
+
+        while (fscanf(data_file, "%d %99s", &buffer_tasks[counter].id, buffer_tasks[counter].name_task) == 2) {
+            if (counter >= len_buffer - 1) {
+                len_buffer *= 2;
+                buffer_tasks = realloc(buffer_tasks, sizeof(task) * len_buffer);
+                if (buffer_tasks == NULL) {
+                    fprintf(stderr, "Ошибка выделения памяти\n");
+                    fclose(data_file);
+                    return NULL;
+                }
+            }
             counter++;
         }
-        free(line);
-        fclose(data_tasks);
-
-
-        // !!! ПОправить эту херню . getline копирует с \n а strcmp проверяет точную копию!!!!
-       for (int i = 0; i < counter; i++) {      // Находим нужную строчку и чистим ее
-        if (strcmp(buffer[i], name_task) == 0) 
-            memset(buffer[i], '\0', strlen(buffer[i]));
-       }
-
-
-        // Перезаписываем в файл данные без удаленной строки
-        if ((data_tasks = fopen(DATA_TASKS, "w")) != NULL) {      
-            for (int i = 0; i < counter; i++) {
-                if (strlen(buffer[i]) > 0) {
-                    fprintf(data_tasks, "%s", buffer[i]);
-                    }
-            }
-            fclose(data_tasks);
-        }
-
-        for (int i = 0; i < size_buffer_lines; i++)
-        {
-            free(buffer[i]);
-        }
-
-        free(buffer);
-       
-    }   
-    else 
-        fprintf(stderr, "%s", "Ошибка с открытием файла 'data_tasks'");
+        fclose(data_file);
+        *task_count = counter;
+        return buffer_tasks;
+    } else {
+        fprintf(stderr, "Ошибка открытия файла %s для чтения\n", DATA_TASKS); // Исправлено
+        return NULL;
+    }
 }
-
-
-void add_new_task(char * name_task) {
-    FILE *data_tasks;
-    if ((data_tasks = fopen(DATA_TASKS, "a")) != NULL) {
-        fprintf(data_tasks, "%s", name_task);
-        fclose(data_tasks);
-    }   
-    else 
-        fprintf(stderr, "%s", "Ошибка с открытием файла 'data_tasks'");
-}
-
-
 
 int main(void) {
-    // char input_user [50];
-    // fgets(input_user, 50, stdin);
-    // add_new_task(input_user);
-    delete_task("123");
-
+    menu();
     return 0;
 }

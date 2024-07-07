@@ -10,7 +10,7 @@ main :
 
 
 clean:
-	rm -rf ../build/to_do_list ./a.out
+	rm -rf ../build/to_do_list ./a.out to_do_list
 
 
 run: 

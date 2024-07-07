@@ -3,85 +3,53 @@
 #include <string.h>
 
 typedef struct {
-    char *name_task;
+    int id;
+    char name_task [100];
 } task;
 
-void delete_task(char *name_task) {
-    FILE *data_tasks;
-    int size_buffer_lines = 10;
-    int sizebuffer_line = 50;
-    char **buffer = malloc(sizeof(char *) * size_buffer_lines); // Выделяем память под строки из файла
-    int counter = 0; // Для заполнения буфера
-    for (int i = 0; i < size_buffer_lines; i++) {
-        buffer[i] = malloc(sizeof(char) * sizebuffer_line);
-    }
+#define DATA_TASKS "data_tasks.txt"
 
-    if ((data_tasks = fopen("data_tasks.txt", "r")) != NULL) {
-        char *line = NULL;
-        size_t len = 0;
-        ssize_t read;
 
-        while ((read = getline(&line, &len, data_tasks)) != -1) { // Копируем все данные файла в буфер
-            if (read >= sizebuffer_line) {
-                buffer[counter] = realloc(buffer[counter], sizeof(char) * (read + 1));
-            }
-            strcpy(buffer[counter], line);
-            if (counter >= size_buffer_lines - 1) {
-                size_buffer_lines += 10;
-                buffer = realloc(buffer, sizeof(char *) * size_buffer_lines);
-                // Выделяем дополнительную память для новых строк
-                for (int i = counter + 1; i < size_buffer_lines; i++) {
-                    buffer[i] = malloc(sizeof(char) * sizebuffer_line);
+task* read_file(size_t* task_count) {
+    FILE* data_file;
+    if ((data_file = fopen(DATA_TASKS, "r")) != NULL) {
+        size_t len_buffer = 50;
+        task *buffer_tasks = malloc(sizeof(task) * len_buffer); // Исправлено
+        int counter = 0;
+
+        while (fscanf(data_file, "%d %99s", &buffer_tasks[counter].id, buffer_tasks[counter].name_task) == 2) { // Исправлено
+            if (counter >= len_buffer - 1) {
+                len_buffer *= 2; // Увеличиваем буфер в 2 раза
+                buffer_tasks = realloc(buffer_tasks, sizeof(task) * len_buffer); // Исправлено
+                if (buffer_tasks == NULL) {
+                    fprintf(stderr, "Ошибка выделения памяти\n");
+                    fclose(data_file);
+                    return NULL;
                 }
             }
             counter++;
         }
-
-        free(line);
-        fclose(data_tasks);
-
-        // Находим нужную строчку и чистим ее
-        for (int i = 0; i < counter; i++) {
-            if (strstr(buffer[i], name_task)) {
-                memset(buffer[i], '\0', strlen(buffer[i]));
-            }
-        }
-
-        // Перезаписываем файл данными без удаленной строки
-        if ((data_tasks = fopen("data_tasks.txt", "w")) != NULL) {
-            for (int i = 0; i < counter; i++) {
-                if (strlen(buffer[i]) > 0) {
-                    fprintf(data_tasks, "%s", buffer[i]);
-                }
-            }
-            fclose(data_tasks);
-        }
-
-        // Освобождаем память
-        for (int i = 0; i < size_buffer_lines; i++) {
-            free(buffer[i]);
-        }
-        free(buffer);
+        fclose(data_file);
+        *task_count = counter; // Возвращаем количество задач
+        return buffer_tasks;
     } else {
-        fprintf(stderr, "Ошибка с открытием файла 'data_tasks'\n");
+        fprintf(stderr, "Ошибка чтения файла %s\n", DATA_TASKS);
+        return NULL;
     }
 }
 
-void add_new_task(char *name_task) {
-    FILE *data_tasks;
-    if ((data_tasks = fopen("data_tasks.txt", "a")) != NULL) {
-        fprintf(data_tasks, "%s\n", name_task); // Добавляем новую задачу с новой строки
-        fclose(data_tasks);
-    } else {
-        fprintf(stderr, "Ошибка с открытием файла 'data_tasks'\n");
-    }
-}
+
 
 int main(void) {
-    // char input_user[50];
-    // fgets(input_user, 50, stdin);
-    // add_new_task(input_user);
-    delete_task("123");
-
+    size_t task_count;
+    task* tasks = read_file(&task_count);
+    if (tasks != NULL) {
+        for (size_t i = 0; i < task_count; i++) {
+            printf("Task ID: %d, Task Name: %s\n", tasks[i].id, tasks[i].name_task);
+        }
+        free(tasks);
+    } else {
+        return 1;
+    }
     return 0;
 }
