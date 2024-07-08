@@ -10,7 +10,7 @@
 // И лучше всего буффер этот во что-то закинуть вместе с длиной массива. Общий размер массива и так далее. Чтобы никуда ничего не улетело;
 void menu() {
     int flag = 1;
-    buffer* buffer_data;
+    buffer* buffer_data = read_file();   // Здесь все данные файла с ними и игремся.
 
     while (flag) {
         fputs("Выберите один из вариантов\n", stdout);
@@ -54,6 +54,11 @@ void menu() {
                 break;
         }
     }
+
+
+    // Чистим буффер
+    free(buffer_data->buffer_tasks);
+    free(buffer_data);
 }
 
 // Нужен буффер в мейне с записью в файл после каждого действия. Иначе придется постоянно открывать файл и записать в него что-то а потом закрывать.
@@ -71,24 +76,18 @@ void close_task(int id) {
 }
 
 
-
-void add_new_task(char* name_new_task) {
-    size_t task_count;
-    task *buffer_tasks = read_file(&task_count);
-    if (buffer_tasks != NULL) {
-        FILE *new_data;
-        if ((new_data = fopen(DATA_TASKS, "a")) != NULL) {
-            buffer_tasks[task_count].done = 0;
-            fprintf(new_data, "%d %d %s", (int)task_count + 1, buffer_tasks[task_count].done, name_new_task); 
-            fclose(new_data);
-        } else {
-            fprintf(stderr, "Ошибка открытия файла %s для записи\n", DATA_TASKS); 
+void add_new_task(char* name_new_task, buffer* buffer_data) {
+    if (buffer_data->len_buffer <= buffer_data->task_count - 1) {
+        buffer_data->len_buffer *= 2;
+        buffer_data->buffer_tasks = realloc(buffer_data->buffer_tasks, sizeof(task) * buffer_data->len_buffer);
         }
-        free(buffer_tasks); // Добавлено
-    } else {
-        fprintf(stderr, "Ошибка чтения файла %s\n", DATA_TASKS); 
-    }
+    buffer_data->buffer_tasks[buffer_data->task_count].id = buffer_data->task_count + 1;
+    strcpy(buffer_data->buffer_tasks[buffer_data->task_count].name_task, name_new_task);
+    buffer_data->buffer_tasks[buffer_data->task_count].done = 0;
+
+    buffer_data->task_count++;
 }
+
 
 void delete_task(int id) {
     print_tasks();
@@ -122,24 +121,18 @@ void delete_task(int id) {
     }
 }
 
-void print_tasks() { // Исправлено имя функции
-    size_t task_count;
-    task *buffer_tasks = read_file(&task_count);
-    if (buffer_tasks != NULL) {
-        fputs("----------------------------------\n", stdout);
-        for (size_t i = 0; i < task_count; i++) {
-            fprintf(stdout, "%d. %s: ", buffer_tasks[i].id, buffer_tasks[i].name_task);
-            if (buffer_tasks[i].done)
-                fprintf(stdout, "Выволнено\n");
-            else
-                fprintf(stdout, "В процессе\n");       
-        }
-        fputs("----------------------------------\n", stdout);
-        free(buffer_tasks);
-    } else {
-        fprintf(stderr, "Ошибка чтения файла %s\n", DATA_TASKS);
+void print_tasks(buffer* buffer_data) { // Исправлено имя функции
+    fputs("----------------------------------\n", stdout);
+    for (size_t i = 0; i < buffer_data->task_count; i++) {
+        fprintf(stdout, "%d. %s: ", buffer_data->buffer_tasks[i].id, buffer_data->buffer_tasks[i].name_task);
+        if (buffer_data->buffer_tasks[i].done)
+            fprintf(stdout, "Выполнено\n"); // Исправлено "Выволнено" на "Выполнено"
+        else
+            fprintf(stdout, "В процессе\n");
     }
+    fputs("----------------------------------\n", stdout);
 }
+
 
 // Записываем данные в файл после каждого изменения в функции menu.
 void write_in_file() {
@@ -148,59 +141,53 @@ void write_in_file() {
 
 
 
-// buffer * read_files() {
-//     buffer * buffer_data;
-//     FILE* data_file;
-//     if ((data_file = fopen(DATA_TASKS, "r")) != NULL) {
-//         size_t len_buffer = 50;
-//         task *buffer_tasks = malloc(sizeof(task) * len_buffer);
-//         if (buffer_tasks == NULL) {
-//             fprintf(stderr, "Ошибка выделения памяти\n");
-//             fclose(data_file);
-//             return NULL;
-//         }
+buffer* read_file() {
+    buffer* buffer_data = malloc(sizeof(buffer)); // Изменено на указатель и выделение памяти
+    if (buffer_data == NULL) {
+        fprintf(stderr, "Ошибка выделения памяти\n");
+        return NULL;
+    }
 
-//     }
-// }
-
-
-task* read_file(size_t* task_count) {
     FILE* data_file;
     if ((data_file = fopen(DATA_TASKS, "r")) != NULL) {
-        size_t len_buffer = 50;
-        task *buffer_tasks = malloc(sizeof(task) * len_buffer);
-        if (buffer_tasks == NULL) {
+        buffer_data->len_buffer = 50;
+        buffer_data->buffer_tasks = malloc(sizeof(task) * buffer_data->len_buffer);
+        if (buffer_data->buffer_tasks == NULL) {
             fprintf(stderr, "Ошибка выделения памяти\n");
             fclose(data_file);
+            free(buffer_data); // Освобождение памяти
             return NULL;
         }
 
         size_t counter = 0;
 
         while (fscanf(data_file, "%d %d %[^\n]",
-         &(buffer_tasks[counter].id),
-          &(buffer_tasks[counter].done), 
-          buffer_tasks[counter].name_task) == 3) {
-            if (counter >= len_buffer - 1) {
-                len_buffer *= 2;
-                buffer_tasks = realloc(buffer_tasks, sizeof(task) * len_buffer);
-                if (buffer_tasks == NULL) {
+            &(buffer_data->buffer_tasks[counter].id),
+            &(buffer_data->buffer_tasks[counter].done),
+            buffer_data->buffer_tasks[counter].name_task) == 3) {
+            if (counter >= buffer_data->len_buffer - 1) {
+                buffer_data->len_buffer *= 2;
+                buffer_data->buffer_tasks = realloc(buffer_data->buffer_tasks, sizeof(task) * buffer_data->len_buffer);
+                if (buffer_data->buffer_tasks == NULL) {
                     fprintf(stderr, "Ошибка выделения памяти\n");
                     fclose(data_file);
+                    free(buffer_data); // Освобождение памяти
                     return NULL;
                 }
             }
             counter++;
         }
-
         fclose(data_file);
-        *task_count = counter;
-        return buffer_tasks;
+        buffer_data->task_count = counter;
+        return buffer_data;
     } else {
         fprintf(stderr, "Ошибка открытия файла %s для чтения\n", DATA_TASKS);
+        free(buffer_data); // Освобождение памяти
         return NULL;
     }
 }
+
+
 
 int main(void) {
     menu();

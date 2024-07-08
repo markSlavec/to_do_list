@@ -20,6 +20,6 @@ typedef struct {
 
 void add_new_task(char* name_new_task);
 void delete_task(int id);
-void print_tasks();
-task* read_file(size_t* task_count);
+void print_tasks(buffer* buffer_data);
+buffer* read_file();
 void close_task(int id);
