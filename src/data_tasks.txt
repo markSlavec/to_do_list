@@ -1,5 +1,2 @@
-
 1 0 qwer
-2 0 eeee
-3 0 ggg
-4 0 ggg
+2 0 ttttttt

@@ -18,8 +18,10 @@ typedef struct {
 } buffer;
 
 
-void add_new_task(char* name_new_task);
-void delete_task(int id);
+void menu();
 void print_tasks(buffer* buffer_data);
 buffer* read_file();
-void close_task(int id);
+void add_new_task(char* name_new_task, buffer* buffer_data);
+void delete_task(int id, buffer* bd);
+void write_in_file(buffer* bd);
+void close_task(int id, buffer* bd);
