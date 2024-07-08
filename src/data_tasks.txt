@@ -1,2 +1,4 @@
-1 0 qwer
-2 0 ttttttt
+1 0 ttttttt
+2 1 tegrthtr
+3 1 123
+4 0 fejwlfjwe
