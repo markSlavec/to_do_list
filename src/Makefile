@@ -14,4 +14,4 @@ clean:
 
 
 run: 
-	../build/to_do_list
+	./to_do_list

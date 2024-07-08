@@ -116,9 +116,10 @@ task* read_file(size_t* task_count) {
             fclose(data_file);
             return NULL;
         }
-        int counter = 0;
 
-        while (fscanf(data_file, "%d %99s", &buffer_tasks[counter].id, buffer_tasks[counter].name_task) == 2) {
+        size_t counter = 0;
+
+        while (fscanf(data_file, "%d %[^\n]", &buffer_tasks[counter].id, buffer_tasks[counter].name_task) == 2) {
             if (counter >= len_buffer - 1) {
                 len_buffer *= 2;
                 buffer_tasks = realloc(buffer_tasks, sizeof(task) * len_buffer);
@@ -130,6 +131,7 @@ task* read_file(size_t* task_count) {
             }
             counter++;
         }
+
         fclose(data_file);
         *task_count = counter;
         return buffer_tasks;
