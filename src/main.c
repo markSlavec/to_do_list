@@ -8,7 +8,7 @@ void menu() {
     int flag = 1;
     while (flag) {
         fputs("Выберите один из вариантов\n", stdout);
-        fputs("1. Создать новую задачу\n2. Показать текущие.\n3. Удалить задачу по ID.\n4. Завершить задачу.\n5. Изменить задачу: ", stdout);
+        fputs("1. Создать новую задачу\n2. Показать текущие.\n3. Удалить задачу по ID.\n4. Выход : ", stdout);
         int user_input;
         fscanf(stdin, "%d", &user_input);
         fflush(stdin);
@@ -35,6 +35,7 @@ void menu() {
             case 4:
                 flag = 0;
                 break;
+
             default:
                 fputs("Неверный ввод, попробуйте снова.\n", stdout); // Добавлено
                 break;
