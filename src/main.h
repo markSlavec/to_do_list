@@ -26,3 +26,4 @@ void delete_task(int id, buffer* bd);
 void write_in_file(buffer* bd);
 void close_task(int id, buffer* bd);
 void all_clean(buffer * bd);
+void clean_done_tasks(buffer* bd);

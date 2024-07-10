@@ -11,7 +11,7 @@ void menu() {
 
     while (flag) {
         fputs("Выберите один из вариантов\n", stdout);
-        fputs("1. Создать новую задачу\n2. Показать текущие.\n3. Удалить задачу по ID.\n4. Выход\n5. Завершить задачу\n6. Удалить все задачи: ", stdout);
+        fputs("1. Создать новую задачу\n2. Показать текущие.\n3. Удалить задачу по ID.\n4. Выход\n5. Завершить задачу\n6. Удалить все задачи\n7. Удалить все выполненные задачи: ", stdout);
         int user_input;
         fscanf(stdin, "%d", &user_input);
         fflush(stdin);
@@ -54,6 +54,11 @@ void menu() {
                 write_in_file(buffer_data); // Запись в файл после завершения задачи
                 break;
             }
+            case 7 : {
+                clean_done_tasks(buffer_data);
+                write_in_file(buffer_data); // Запись в файл после завершения задачи
+                break;
+            }
             default:
                 fputs("Неверный ввод, попробуйте снова.\n", stdout); // Добавлено
                 break;
@@ -66,15 +71,15 @@ void menu() {
 }
 
 
-// void clean_done_tasks(buffer* bd) {
-//     for (size_t i = 0; i < bd->task_count; i++)
-//     {
-//         if (bd->buffer_tasks[i].done) {
+void clean_done_tasks(buffer* bd) {
+    int new_task_count = 0;
 
-//         }
-//     }
-    
-// }
+    for (size_t i = 0; i < bd->task_count; i++) {
+        if ( !bd->buffer_tasks[i].done )
+            bd->buffer_tasks[new_task_count++] = bd->buffer_tasks[i];
+    }
+    bd->task_count = new_task_count;
+}
 
 
 void all_clean(buffer * bd) {
