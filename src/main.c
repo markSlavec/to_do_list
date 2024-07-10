@@ -65,6 +65,18 @@ void menu() {
     free(buffer_data);
 }
 
+
+// void clean_done_tasks(buffer* bd) {
+//     for (size_t i = 0; i < bd->task_count; i++)
+//     {
+//         if (bd->buffer_tasks[i].done) {
+
+//         }
+//     }
+    
+// }
+
+
 void all_clean(buffer * bd) {
     free(bd->buffer_tasks);
     bd->task_count = 0;
@@ -155,18 +167,15 @@ void add_new_task(char* name_new_task, buffer* buffer_data) {
     buffer_data->task_count++;
 }
 
-
 void delete_task(int id, buffer* bd) {
     bd->task_count--;
-    for (size_t i = 0; i < bd->task_count; i++) {
-        if (bd->buffer_tasks[i].id == id) { // Смещение массива
-            for (size_t j = id - 1; j < bd->task_count; j++) {
-                bd->buffer_tasks[j] = bd->buffer_tasks[j + 1];
-                bd->buffer_tasks[j].id = j + 1;
-            }
-            break;
-        }
+
+    for (size_t i = id - 1; i < bd->task_count; i++)
+    {
+        bd->buffer_tasks[i] = bd->buffer_tasks[i + 1];
+        bd->buffer_tasks[i].id = i + 1;
     }
+    
 }
 
 // Нужно открыть только один раз и перередавать стрим. Но это будет менее стабильно. 
