@@ -11,7 +11,7 @@ void menu() {
 
     while (flag) {
         fputs("Выберите один из вариантов\n", stdout);
-        fputs("1. Создать новую задачу\n2. Показать текущие.\n3. Удалить задачу по ID.\n4. Выход\n5. Завершить задачу: ", stdout);
+        fputs("1. Создать новую задачу\n2. Показать текущие.\n3. Удалить задачу по ID.\n4. Выход\n5. Завершить задачу\n6. Удалить все задачи: ", stdout);
         int user_input;
         fscanf(stdin, "%d", &user_input);
         fflush(stdin);
@@ -49,6 +49,11 @@ void menu() {
                 write_in_file(buffer_data); // Запись в файл после завершения задачи
                 break;
             }
+            case 6: {
+                all_clean(buffer_data);
+                write_in_file(buffer_data); // Запись в файл после завершения задачи
+                break;
+            }
             default:
                 fputs("Неверный ввод, попробуйте снова.\n", stdout); // Добавлено
                 break;
@@ -58,6 +63,13 @@ void menu() {
     // Чистим буфер
     free(buffer_data->buffer_tasks);
     free(buffer_data);
+}
+
+void all_clean(buffer * bd) {
+    free(bd->buffer_tasks);
+    bd->task_count = 0;
+    bd->len_buffer = 50;
+    bd->buffer_tasks = malloc(sizeof(task) * bd->len_buffer);
 }
 
 
@@ -157,8 +169,7 @@ void delete_task(int id, buffer* bd) {
     }
 }
 
-// Записываем данные в файл после каждого изменения в функции menu.
-// Нужно открыть только один раз и перередавать стрим 
+// Нужно открыть только один раз и перередавать стрим. Но это будет менее стабильно. 
 void write_in_file(buffer* bd) {
     FILE* file;
     if ((file = fopen(DATA_TASKS, "w")) != NULL) {

@@ -25,3 +25,4 @@ void add_new_task(char* name_new_task, buffer* buffer_data);
 void delete_task(int id, buffer* bd);
 void write_in_file(buffer* bd);
 void close_task(int id, buffer* bd);
+void all_clean(buffer * bd);
