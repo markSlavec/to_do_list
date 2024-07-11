@@ -31,13 +31,11 @@ void validation_user_input(value* user_input, typedata fuctuio_data) {
   }
 }
 
-
 void welcome_message() {
-    fputs("--------------------------------------\n", stdout);
-    fputs("| Добро пожаловать в TO DO LIST на С |\n", stdout);
-    fputs("--------------------------------------\n", stdout);
+  fputs("--------------------------------------\n", stdout);
+  fputs("| Добро пожаловать в TO DO LIST на С |\n", stdout);
+  fputs("--------------------------------------\n", stdout);
 }
-
 
 void print_menu() {
   fputs("Выберите один из вариантов\n", stdout);
@@ -54,7 +52,7 @@ void menu() {
       read_file();  // Здесь все данные файла, с ними и работаем.
   value user_input_option;
   value user_input;
-  
+
   welcome_message();
 
   while (flag) {
@@ -108,7 +106,7 @@ void menu() {
         break;
     }
 
-    system("clear");    // Чистим терминал
+    system("clear");  // Чистим терминал
   }
 
   // Чистим буфер
@@ -143,8 +141,8 @@ void close_task(int id, buffer* bd) {
 }
 
 void print_tasks(buffer* buffer_data) {
-    fputs("\n----------------------------------", stdout);
-    fputs("\nСПИСОК ЗАДАЧ\n", stdout);
+  fputs("\n----------------------------------", stdout);
+  fputs("\nСПИСОК ЗАДАЧ\n", stdout);
   fputs("----------------------------------\n", stdout);
   for (size_t i = 0; i < buffer_data->task_count; i++) {
     fprintf(stdout, "%d. %s: ", buffer_data->buffer_tasks[i].id,
