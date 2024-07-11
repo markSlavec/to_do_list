@@ -5,6 +5,17 @@
 
 #define DATA_TASKS "data_tasks.txt"
 
+typedef enum {
+    INT,
+    CHAR
+} typedata;
+
+typedef union {
+    int id;
+    char new_task [100];
+} value;
+
+
 typedef struct {
     int id;
     char name_task [100];
@@ -27,3 +38,4 @@ void write_in_file(buffer* bd);
 void close_task(int id, buffer* bd);
 void all_clean(buffer * bd);
 void clean_done_tasks(buffer* bd);
+int print_menu_and_user_input();
