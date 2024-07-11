@@ -15,3 +15,7 @@ clean:
 
 run: 
 	./to_do_list
+	
+
+clang:
+	clang-format -i *.c *.h 
