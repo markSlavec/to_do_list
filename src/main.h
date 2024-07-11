@@ -32,4 +32,5 @@ void write_in_file(buffer* bd);
 void close_task(int id, buffer* bd);
 void all_clean(buffer* bd);
 void clean_done_tasks(buffer* bd);
-int print_menu_and_user_input();
+void print_menu();
+void welcome_message();
